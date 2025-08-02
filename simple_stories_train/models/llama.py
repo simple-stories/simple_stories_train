@@ -34,6 +34,7 @@ class LlamaConfig(BaseModel):
     )  # Note that llama 3.1 n_key_value_heads does not scale with n_heads
     use_grouped_query_attention: bool = True
     flash_attention: bool = True
+    rms_norm_eps: float = 1e-6
 
 
 class CausalSelfAttention(nn.Module):
@@ -246,7 +247,7 @@ class SwiGLUMLP(nn.Module):
 
 
 class LlamaRMSNorm(nn.Module):
-    def __init__(self, hidden_size: int, eps: float = 1e-6):
+    def __init__(self, hidden_size: int, eps: float):
         """
         LlamaRMSNorm is equivalent to T5LayerNorm
         """
@@ -268,9 +269,9 @@ class LlamaRMSNorm(nn.Module):
 class Block(nn.Module):
     def __init__(self, config: LlamaConfig):
         super().__init__()
-        self.rms_1 = LlamaRMSNorm(config.n_embd)
+        self.rms_1 = LlamaRMSNorm(config.n_embd, eps=config.rms_norm_eps)
         self.attn = CausalSelfAttention(config)
-        self.rms_2 = LlamaRMSNorm(config.n_embd)
+        self.rms_2 = LlamaRMSNorm(config.n_embd, eps=config.rms_norm_eps)
         self.mlp = SwiGLUMLP(config)
 
     def forward(self, x: Float[Tensor, "... pos d_model"]) -> Float[Tensor, "... pos d_model"]:
@@ -287,7 +288,7 @@ class Llama(nn.Module):
             dict(
                 wte=nn.Embedding(config.vocab_size, config.n_embd),
                 h=nn.ModuleList([Block(config) for _ in range(config.n_layer)]),
-                rms_f=LlamaRMSNorm(config.n_embd),
+                rms_f=LlamaRMSNorm(config.n_embd, eps=config.rms_norm_eps),
             )
         )
         self.lm_head = nn.Linear(config.n_embd, config.vocab_size, bias=False)
