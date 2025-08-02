@@ -7,7 +7,7 @@ import torch
 from tokenizers import Tokenizer
 from transformers import AutoTokenizer
 
-from simple_stories_train.convert_to_hf import convert_model_to_hf
+from simple_stories_train.convert_to_hf import convert_llama_model_to_hf
 from simple_stories_train.models.llama import Llama
 from simple_stories_train.models.model_configs import MODEL_CONFIGS
 
@@ -15,10 +15,10 @@ from simple_stories_train.models.model_configs import MODEL_CONFIGS
 @pytest.mark.slow
 @pytest.mark.parametrize("model_size", ["1.25M", "5M", "11M", "30M", "35M"])
 @torch.inference_mode()
-def test_convert_model_to_hf(
+def test_convert_llama_model_to_hf(
     model_size: str, tokenizer_path: str = "simple_stories_train/tokenizer/simplestories-4096.json"
 ) -> None:
-    """Test the conversion from custom model to HuggingFace format.
+    """Test the conversion from custom llama model to a HuggingFace LlamaForCausalLM model.
 
     Args:
         model_size: Size of the model to test
@@ -31,7 +31,7 @@ def test_convert_model_to_hf(
     custom_model.eval()
 
     # Convert the model
-    hf_model = convert_model_to_hf(custom_model)
+    hf_model = convert_llama_model_to_hf(custom_model)
 
     # Load custom tokenizer
     custom_tokenizer: Tokenizer = Tokenizer.from_file(tokenizer_path)

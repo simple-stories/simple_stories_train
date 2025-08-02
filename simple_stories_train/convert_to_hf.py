@@ -11,7 +11,7 @@ from simple_stories_train.models.model_configs import MODEL_CONFIGS
 # pyright: reportIndexIssue=false
 
 
-def convert_model_to_hf(custom_model: Llama) -> LlamaForCausalLM:
+def convert_llama_model_to_hf(custom_model: Llama) -> LlamaForCausalLM:
     """Convert Llama model to HuggingFace format.
 
     Args:
@@ -101,7 +101,7 @@ if __name__ == "__main__":
     custom_model.eval()
 
     # Convert the model
-    hf_model = convert_model_to_hf(custom_model)
+    hf_model = convert_llama_model_to_hf(custom_model)
 
     # Uncomment to save the converted model
     # hf_model.save_pretrained(f"converted_hf_model_{model_size}")
