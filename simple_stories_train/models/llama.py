@@ -1,6 +1,7 @@
 import inspect
 import math
 import os
+from typing import cast
 
 import torch
 import torch.nn as nn
@@ -13,6 +14,8 @@ from torch.distributed.optim import ZeroRedundancyOptimizer
 from torch.nn import functional as F
 
 from simple_stories_train.utils import print0
+
+# pyright: reportAttributeAccessIssue=false
 
 
 class LlamaConfig(BaseModel):
@@ -206,8 +209,8 @@ class CausalSelfAttention(nn.Module):
 
         position_ids = position_ids.clamp(max=self.n_ctx - 1)
 
-        cos = self.rotary_cos[position_ids].to(q.dtype)
-        sin = self.rotary_sin[position_ids].to(q.dtype)
+        cos = cast(Tensor, self.rotary_cos)[position_ids].to(q.dtype)
+        sin = cast(Tensor, self.rotary_sin)[position_ids].to(q.dtype)
 
         q, k = self.apply_rotary_pos_emb(q, k, cos, sin)
 
@@ -223,7 +226,7 @@ class CausalSelfAttention(nn.Module):
         else:
             # Manual attention calculation
             att = (q @ k.transpose(-2, -1)) * (1.0 / math.sqrt(k.size(-1)))
-            att = att.masked_fill(self.bias[:, :, :T, :T] == 0, float("-inf"))
+            att = att.masked_fill(cast(Tensor, self.bias)[:, :, :T, :T] == 0, float("-inf"))
             att = F.softmax(att, dim=-1)
             y = att @ v  # (B, n_head, T, head_dim)
 
@@ -325,11 +328,11 @@ class Llama(nn.Module):
         assert t <= self.config.block_size, (
             f"Cannot forward sequence of length {t}, block size is only {self.config.block_size}"
         )
-        tok_emb = self.transformer.wte(idx)
+        tok_emb = self.transformer.wte(idx)  # pyright: ignore[reportCallIssue]
         x = tok_emb
-        for block in self.transformer.h:
+        for block in self.transformer.h:  # pyright: ignore[reportGeneralTypeIssues]
             x = block(x)
-        x = self.transformer.rms_f(x)
+        x = self.transformer.rms_f(x)  # pyright: ignore[reportCallIssue]
         logits = self.lm_head(x)
         loss = None
         if targets is not None:
@@ -383,7 +386,7 @@ class Llama(nn.Module):
         model.load_state_dict(state_dict, strict=False)
 
         # Regenerate rotary_sin and rotary_cos for each attention layer
-        for layer_idx, block in enumerate(model.transformer.h):
+        for layer_idx, block in enumerate(model.transformer.h):  # pyright: ignore[reportArgumentType]
             attn = block.attn
             sin, cos = attn.calculate_sin_cos_rotary(
                 rotary_dim=attn.rotary_dim,

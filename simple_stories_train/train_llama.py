@@ -265,6 +265,7 @@ def main(config_path_or_obj: Path | str | Config | None = None, **kwargs: Any) -
         model: nn.Module = DDP(model, device_ids=[ddp_local_rank])
     raw_model = model.module if ddp else model  # always contains the "raw" unwrapped model
 
+    assert isinstance(raw_model, Llama)
     # init the optimizer
     optimizer = raw_model.configure_optimizers(
         weight_decay=config.weight_decay,
