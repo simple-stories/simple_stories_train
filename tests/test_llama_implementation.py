@@ -1,7 +1,9 @@
 import tempfile
 from pathlib import Path
+from typing import cast
 
 import torch
+from torch import Tensor
 from transformers import LlamaConfig as HFLlamaConfig
 from transformers.models.llama.modeling_llama import LlamaRotaryEmbedding, apply_rotary_pos_emb
 
@@ -67,8 +69,8 @@ def test_rotary_embedding_implementation() -> None:
     q_custom = q_hf.detach().clone()
     k_custom = k_hf.detach().clone()
 
-    custom_cos = custom_implementation.rotary_cos[position_ids].to(q_custom.dtype)
-    custom_sin = custom_implementation.rotary_sin[position_ids].to(q_custom.dtype)
+    custom_cos = cast(Tensor, custom_implementation.rotary_cos)[position_ids].to(q_custom.dtype)
+    custom_sin = cast(Tensor, custom_implementation.rotary_sin)[position_ids].to(q_custom.dtype)
 
     q_custom_rot, k_custom_rot = custom_implementation.apply_rotary_pos_emb(
         q_custom, k_custom, custom_cos, custom_sin
