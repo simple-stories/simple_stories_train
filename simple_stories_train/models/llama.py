@@ -14,7 +14,7 @@ from transformers import LlamaForCausalLM
 
 from simple_stories_train.utils import print0
 
-# pyright: reportAttributeAccessIssue=false
+# pyright: reportAttributeAccessIssue=false, reportIndexIssue=false
 
 
 def convert_llama_for_causal_lm_to_llama(hf_model: LlamaForCausalLM):
@@ -48,9 +48,10 @@ def convert_llama_for_causal_lm_to_llama(hf_model: LlamaForCausalLM):
         ].self_attn.q_proj.weight.data
 
         # Key and Value projections - combine separate HF weights into single KV weight
-        k_weight = hf_model.model.layers[i].self_attn.k_proj.weight.data
-        v_weight = hf_model.model.layers[i].self_attn.v_proj.weight.data
+        k_weight = cast(Tensor, hf_model.model.layers[i].self_attn.k_proj.weight.data)
+        v_weight = cast(Tensor, hf_model.model.layers[i].self_attn.v_proj.weight.data)
         kv_combined = torch.cat([k_weight, v_weight], dim=0)
+
         model.transformer.h[i].attn.kv_attn.weight.data = kv_combined
 
         # Output projection
@@ -433,7 +434,7 @@ class Llama(nn.Module):
             model.load_state_dict(state_dict, strict=strict)
 
             # Regenerate rotary_sin and rotary_cos for each attention layer
-            for _, block in enumerate(model.transformer.h):
+            for _, block in enumerate(model.transformer.h):  # type: ignore
                 attn = block.attn
                 sin, cos = attn.calculate_sin_cos_rotary(
                     rotary_dim=attn.rotary_dim,
