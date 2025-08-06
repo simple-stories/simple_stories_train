@@ -62,6 +62,7 @@ def test_convert_llama_to_llama_for_causal_lm(
     torch.testing.assert_close(hf_logits, custom_logits, rtol=1e-4, atol=1e-4)
 
 
+@pytest.mark.slow
 @pytest.mark.parametrize("model_size", ["1.25M", "5M", "11M", "30M", "35M"])
 @torch.inference_mode()
 def test_convert_llama_for_causal_lm_to_llama(
