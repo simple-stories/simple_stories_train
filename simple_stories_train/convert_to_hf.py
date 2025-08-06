@@ -2,7 +2,8 @@
 This script demonstrates how to convert our custom model to a HuggingFace-compatible model.
 """
 
-from transformers import LlamaConfig, LlamaForCausalLM
+from transformers import LlamaConfig as HFLlamaConfig
+from transformers import LlamaForCausalLM
 
 from simple_stories_train.models.llama import Llama
 from simple_stories_train.models.model_configs import MODEL_CONFIGS
@@ -11,7 +12,7 @@ from simple_stories_train.models.model_configs import MODEL_CONFIGS
 # pyright: reportIndexIssue=false
 
 
-def convert_llama_model_to_hf(custom_model: Llama) -> LlamaForCausalLM:
+def convert_llama_to_llama_for_causal_lm(custom_model: Llama) -> LlamaForCausalLM:
     """Convert Llama model to HuggingFace format.
 
     Args:
@@ -23,7 +24,7 @@ def convert_llama_model_to_hf(custom_model: Llama) -> LlamaForCausalLM:
     model_config = custom_model.config
 
     # Create a matching HuggingFace configuration
-    hf_config = LlamaConfig(
+    hf_config = HFLlamaConfig(
         vocab_size=model_config.vocab_size,
         hidden_size=model_config.n_embd,
         intermediate_size=model_config.n_intermediate,
@@ -101,7 +102,7 @@ if __name__ == "__main__":
     custom_model.eval()
 
     # Convert the model
-    hf_model = convert_llama_model_to_hf(custom_model)
+    hf_model = convert_llama_to_llama_for_causal_lm(custom_model)
 
     # Uncomment to save the converted model
     # hf_model.save_pretrained(f"converted_hf_model_{model_size}")
