@@ -68,7 +68,12 @@ def test_convert_llama_to_llama_for_causal_lm(
 def test_convert_llama_for_causal_lm_to_llama(
     model_size: str, tokenizer_path: str = "simple_stories_train/tokenizer/simplestories-4096.json"
 ) -> None:
-    """Test the conversion from custom llama model to a HuggingFace LlamaForCausalLM model.
+    """Test the conversion from HuggingFace LlamaForCausalLM to custom llama model.
+
+    This test validates that:
+    1. HuggingFace pretrained models can be loaded successfully and ensures backward compatibility
+    2. The conversion produces logits identical to the original HuggingFace model
+    3. Both HuggingFace and custom tokenizers produce equivalent results
 
     Args:
         model_size: Size of the model to test
