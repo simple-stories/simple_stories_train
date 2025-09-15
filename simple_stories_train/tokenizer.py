@@ -15,6 +15,7 @@ from tokenizers.pre_tokenizers import Digits, Punctuation, Sequence, Whitespace
 from tokenizers.processors import TemplateProcessing
 from tokenizers.trainers import WordPieceTrainer
 from tqdm import tqdm
+from transformers import PreTrainedTokenizerFast
 
 OUT_DIR = Path("tokenizer")
 
@@ -236,6 +237,18 @@ def get_special_token_ids(tokenizer: Tokenizer) -> set[int]:
         special_token_ids.add(unk_id)
 
     return special_token_ids
+
+
+def convert_to_hf_tokenizer(tokenizer: Tokenizer, model_max_length: int):
+    hf_tokenizer = PreTrainedTokenizerFast(
+        tokenizer_object=tokenizer,
+        unk_token="[UNK]",
+        eos_token="[EOS]",
+        pad_token="[UNK]",  # Using UNK as pad since no dedicated PAD token
+        model_max_length=model_max_length,
+    )
+
+    return hf_tokenizer
 
 
 if __name__ == "__main__":

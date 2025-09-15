@@ -1,6 +1,6 @@
 """Simple test for tokenizer pruning functionality."""
 
-from simple_stories_train.tokenizer import prune_tokenizer, train_tokenizer
+from simple_stories_train.tokenizer import convert_to_hf_tokenizer, prune_tokenizer, train_tokenizer
 
 
 def create_test_tokenizer():
@@ -94,3 +94,17 @@ def test_unk_for_unknown_words():
     unk_id_pruned = pruned.token_to_id("[UNK]")
     encoded_pruned = pruned.encode("antidisestablishmentarianism")
     assert unk_id_pruned in encoded_pruned.ids
+
+
+def test_convert_to_hf_tokenize():
+    """Verify conversion to HF tokenizer produces identical token IDs."""
+    original_tokenizer = create_test_tokenizer()
+    hf_tokenizer = convert_to_hf_tokenizer(original_tokenizer, model_max_length=512)
+
+    test_strings = ["hello world", "hello there", "antidisestablishmentarianism"]
+
+    for test_str in test_strings:
+        orig_ids = original_tokenizer.encode(test_str).ids
+        hf_ids = hf_tokenizer.encode(test_str)
+
+        assert orig_ids == hf_ids, f"Token IDs differ for '{test_str}': {orig_ids} vs {hf_ids}"

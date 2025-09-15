@@ -301,6 +301,10 @@ def main(config_path_or_obj: Path | str | Config | None = None, **kwargs: Any) -
         if config.intermediate_checkpoints:
             save_model(checkpoints_dir, raw_model, step=0, wandb_project=config.wandb_project)
 
+        # save the accompanying tokenizer
+        train_tokenizer.save(str(output_dir / "tokenizer.json"))
+        print0(f"Tokenizer saved to {output_dir / 'tokenizer.json'}")
+
     if device == "cuda":
         torch.cuda.reset_peak_memory_stats()
     timings: list[float] = []
