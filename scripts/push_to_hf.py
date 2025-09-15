@@ -175,12 +175,10 @@ def convert_to_hf_model(custom_model: Llama | GPT2) -> PreTrainedModel:
 
 def find_saved_tokenizer(output_dir: Path) -> Path | None:
     """Find the saved tokenizer in the training output directory."""
-    # Look for tokenizer.json saved during training
     tokenizer_path = output_dir / "tokenizer.json"
     if tokenizer_path.exists():
         return tokenizer_path
 
-    # If not found, return default tokenizer
     known_default = Path("simple_stories_train/tokenizer/simplestories-tokenizer.json")
     if known_default.is_file():
         return known_default.resolve()
@@ -202,7 +200,6 @@ def convert_and_upload_tokenizer(
 
     print(f"Found tokenizer at {tokenizer_path}")
 
-    # Load the raw tokenizer
     try:
         raw_tokenizer = Tokenizer.from_file(str(tokenizer_path))
     except Exception as e:
@@ -210,7 +207,6 @@ def convert_and_upload_tokenizer(
         return
 
     hf_tokenizer = convert_to_hf_tokenizer(raw_tokenizer, model_max_length)
-    # Push to Hub
     hf_tokenizer.push_to_hub(
         repo_id=repo_id,
         token=token,
