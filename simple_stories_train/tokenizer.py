@@ -19,6 +19,7 @@ from tokenizers.trainers import WordPieceTrainer
 OUT_DIR = Path("tokenizer")
 
 # Define common affixes for special handling based on morphological analysis of the dataset
+# BUG: The following just adds the characters of the strings as the initial tokenizer vocab. Should be fixed upon rerun, though kept here to be consistent with the paper.
 COMMON_PREFIXES = ["un", "re"]
 COMMON_SUFFIXES = ["ed", "ing", "ly", "er", "ness"]
 
